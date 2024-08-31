@@ -1,0 +1,25 @@
+.add-category-card {
+  border: 2px dashed gray;
+}
+
+.card-container {
+  box-shadow: 0 0 10px gray;
+  height: 200px;
+  transition: transform 0.3s ease-in-out !important;
+  position: relative;
+}
+
+.card-container:hover {
+  transform: scale(1.04);
+}
+
+.add-category-icon {
+  height: 100px !important;
+  width: 100px !important;
+}
+
+.heading-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+}
