@@ -13,16 +13,13 @@ import { Toaster } from "react-hot-toast";
 import { getUserData } from "./api/user.api";
 import notification from "./configs/notification.config";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setUserData } from "./store/user/userReducer";
-import { RootState } from "./store/store";
 
 const App: React.FC = () => {
   const { toggleTheme, theme } = useThemeMode();
 
   const dispatch = useDispatch();
-
-  const { user } = useSelector((state: RootState) => state.userReducer);
 
   const muiTheme = createTheme({
     palette: {
@@ -50,7 +47,7 @@ const App: React.FC = () => {
       <CssBaseline />
       <Toaster />
       <BrowserRouter>
-        {user && <Navbar toggleTheme={toggleTheme} />}
+        <Navbar toggleTheme={toggleTheme} />
         <Container maxWidth="xl" className="homepage-container">
           <RouterComponent />
         </Container>

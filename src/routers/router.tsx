@@ -1,7 +1,8 @@
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
+import FallBack from "../components/FallBack";
 
 const HomePage = lazy(() => import("../pages/HomePage"));
 const Login = lazy(() => import("../pages/Login"));
@@ -15,26 +16,28 @@ const AddQuestionForm = lazy(() => import("../components/AddQuestionForm"));
 
 const RouterComponent = () => {
   return (
-    <Routes>
-      <Route element={<PublicRoute />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-      </Route>
-      <Route element={<PrivateRoute />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/category/:categoryId" element={<QuestionPage />} />
-        <Route
-          path="/category/:categoryId/topic/:topicId"
-          element={<TopicWiseQuestionsList />}
-        />
+    <Suspense fallback={<FallBack />}>
+      <Routes>
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Route>
+        <Route element={<PrivateRoute />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/category/:categoryId" element={<QuestionPage />} />
+          <Route
+            path="/category/:categoryId/topic/:topicId"
+            element={<TopicWiseQuestionsList />}
+          />
 
-        <Route
-          path="/category/:categoryId/question/:questionId"
-          element={<QuestionDetails />}
-        />
-        <Route path="/question/create" element={<AddQuestionForm />} />
-      </Route>
-    </Routes>
+          <Route
+            path="/category/:categoryId/question/:questionId"
+            element={<QuestionDetails />}
+          />
+          <Route path="/question/create" element={<AddQuestionForm />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 };
 

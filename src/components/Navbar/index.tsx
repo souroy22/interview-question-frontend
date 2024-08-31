@@ -134,13 +134,15 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
           </IconButton>
         </Box>
         <Box>
-          <Tooltip title="Account settings">
-            <Avatar
-              src={user?.avatar ?? ""}
-              {...stringAvatar(user?.firstName, user?.lastName)}
-              onClick={handleClick}
-            />
-          </Tooltip>
+          {user && (
+            <Tooltip title="Account settings">
+              <Avatar
+                src={user.avatar ?? ""}
+                {...stringAvatar(user?.firstName, user?.lastName)}
+                onClick={handleClick}
+              />
+            </Tooltip>
+          )}
           <Menu
             anchorEl={anchorEl}
             id="account-menu"
