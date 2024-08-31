@@ -6,6 +6,7 @@ const PrivateRoute = () => {
   const location = useLocation();
 
   const { user } = useSelector((state: RootState) => state.userReducer);
+
   if (user) {
     return <Outlet />;
   }
