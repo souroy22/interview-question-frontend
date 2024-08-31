@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   TextField,
   Button,
@@ -8,14 +8,9 @@ import {
   InputLabel,
 } from "@mui/material";
 import useForm from "../../hooks/useForm";
-import {
-  createCategory,
-  getCategories,
-  updateCategory,
-} from "../../api/category.api";
+import { getCategories } from "../../api/category.api";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addNewCategory,
   CATEGORY_TYPE,
   setCategories,
 } from "../../store/category/categoryReducer";

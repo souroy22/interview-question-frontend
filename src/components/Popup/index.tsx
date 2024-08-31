@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { Modal, Box, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 

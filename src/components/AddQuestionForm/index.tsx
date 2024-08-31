@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FC } from "react";
 import {
   Container,
   Typography,
@@ -17,7 +17,7 @@ import "./style.css";
 type Language = "javascript" | "typescript" | "jsx" | "tsx";
 type QUESTION_TYPE = "CODE" | "THEORY";
 
-const AddQuestionForm: React.FC = () => {
+const AddQuestionForm: FC = () => {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [solution, setSolution] = useState<string>("");

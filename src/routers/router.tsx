@@ -1,13 +1,17 @@
-import HomePage from "../pages/HomePage";
-import Login from "../pages/Login";
-import QuestionDetails from "../pages/QuestionDetails";
+import { lazy } from "react";
 import { Routes, Route } from "react-router-dom";
-import Signup from "../pages/Signup";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
-import QuestionPage from "../pages/Question";
-import TopicWiseQuestionsList from "../pages/TopicWiseQuestionList";
-import AddQuestionForm from "../components/AddQuestionForm";
+
+const HomePage = lazy(() => import("../pages/HomePage"));
+const Login = lazy(() => import("../pages/Login"));
+const QuestionDetails = lazy(() => import("../pages/QuestionDetails"));
+const Signup = lazy(() => import("../pages/Signup"));
+const QuestionPage = lazy(() => import("../pages/Question"));
+const TopicWiseQuestionsList = lazy(
+  () => import("../pages/TopicWiseQuestionList")
+);
+const AddQuestionForm = lazy(() => import("../components/AddQuestionForm"));
 
 const RouterComponent = () => {
   return (
