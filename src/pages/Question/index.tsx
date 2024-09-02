@@ -46,9 +46,9 @@ const QuestionPage: React.FC = () => {
           Topicwise
         </ToggleButton>
       </ToggleButtonGroup>
-      <Button variant="contained">
-        <Link to="/question/create">Add Question</Link>
-      </Button>
+      <Link to="/question/create">
+        <Button variant="contained">Add Question</Button>
+      </Link>
       <Grid container spacing={3}>
         {view === "all" ? <QuestionsList /> : <Topics />}
       </Grid>

@@ -13,9 +13,17 @@ import {
 } from "@mui/material";
 import Editor, { useMonaco, OnMount } from "@monaco-editor/react";
 import "./style.css";
+import { createQuestion } from "../../api/question.api";
+import notification from "../../configs/notification.config";
+import InfiniteScrollDropdown, {
+  DROPDOWN_OPTION_TYPE,
+} from "../InfiniteScrollDropdown";
+import { getTopics } from "../../api/topic.api";
+import { Topic_TYPE } from "../../store/topic/topicReducer";
 
 type Language = "javascript" | "typescript" | "jsx" | "tsx";
-type QUESTION_TYPE = "CODE" | "THEORY";
+type QUESTION_TYPE = "CODING" | "THEORY";
+export type TOPIC_DROPDOWN_TYPE = { label: string; value: string | number };
 
 const AddQuestionForm: FC = () => {
   const [title, setTitle] = useState<string>("");
@@ -24,14 +32,25 @@ const AddQuestionForm: FC = () => {
   const [youtubeLink, setYoutubeLink] = useState<string>("");
   const [websiteLink, setWebsiteLink] = useState<string>("");
   const [language, setLanguage] = useState<Language>("javascript");
-  const [type, setType] = useState<QUESTION_TYPE>("CODE");
+  const [type, setType] = useState<QUESTION_TYPE>("CODING");
+  const [topics, setTopics] = useState<TOPIC_DROPDOWN_TYPE[] | []>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPage, setTotalPage] = useState<number>(1);
+  const [searchValue, setSearchValue] = useState("");
+  const [selectedTopic, setSelectedTopic] =
+    useState<TOPIC_DROPDOWN_TYPE | null>(null);
+  const [loadingTopics, setLoadingTopics] = useState(false);
 
   const [errors, setErrors] = useState<{
     title?: string;
     description?: string;
+    topic?: string;
+    solution?: string;
   }>({
     title: "",
     description: "",
+    topic: "",
+    solution: "",
   });
 
   const editorRef = useRef<any>(null);
@@ -113,39 +132,65 @@ const AddQuestionForm: FC = () => {
     }
   };
 
-  const handleSubmit = () => {
-    let hasError = false;
-    const newErrors: { title?: string; description?: string } = {};
+  const handleSubmit = async () => {
+    try {
+      let hasError = false;
+      const newErrors: {
+        title?: string;
+        description?: string;
+        topic?: string;
+        solution?: string;
+      } = {};
 
-    if (!title) {
-      newErrors.title = "Title is required";
-      hasError = true;
+      if (!title) {
+        newErrors.title = "Title is required";
+        hasError = true;
+      }
+
+      if (!selectedTopic) {
+        console.log("selectedTopic", selectedTopic);
+        newErrors.topic = "Topic is required";
+        hasError = true;
+      }
+
+      if (!description) {
+        newErrors.description = "Description is required";
+        hasError = true;
+      }
+
+      if (hasError) {
+        console.log("newErrors", newErrors);
+
+        setErrors(newErrors);
+        notification.error("Please fill all required fields!");
+        return;
+      }
+
+      const newQuestion = {
+        title,
+        description,
+        solution,
+        youtubeLink,
+        websiteLink,
+        language,
+        type,
+      };
+      const data = await createQuestion({
+        ...newQuestion,
+        topicSlug: selectedTopic?.value,
+      });
+      console.log("data", data);
+      setTitle("");
+      setDescription("");
+      setSolution("");
+      setYoutubeLink("");
+      setWebsiteLink("");
+      setErrors({});
+    } catch (error) {
+      if (error instanceof Error) {
+        notification.error(error.message);
+      }
     }
-
-    if (!description) {
-      newErrors.description = "Description is required";
-      hasError = true;
-    }
-
-    if (hasError) {
-      setErrors(newErrors);
-      return;
-    }
-
-    const newQuestion = {
-      title,
-      description,
-      solution,
-      youtubeLink,
-      websiteLink,
-    };
-    console.log("New Question:", newQuestion);
-    setTitle("");
-    setDescription("");
-    setSolution("");
-    setYoutubeLink("");
-    setWebsiteLink("");
-    setErrors({});
   };
 
   const handleChange = (
@@ -166,7 +211,48 @@ const AddQuestionForm: FC = () => {
     }
   };
 
-  console.log("errors", errors);
+  const loadTopics = async (page: number = 1, searchValue: string = "") => {
+    setLoadingTopics(true);
+    try {
+      const res = await getTopics("", page, searchValue);
+      const data: TOPIC_DROPDOWN_TYPE[] = res.data.map((topic: Topic_TYPE) => {
+        return { label: topic.name, value: topic.slug };
+      });
+      setCurrentPage(res.page);
+      setTotalPage(res.totalPages);
+      if (topics && page !== 1) {
+        setTopics([...topics, ...data]);
+      } else {
+        setTopics(data);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        notification.error(error.message);
+      }
+    } finally {
+      setLoadingTopics(false);
+    }
+  };
+
+  const handleTopicChange = async (value: string) => {
+    setSearchValue(value);
+    setCurrentPage(1);
+    await loadTopics(1, value);
+  };
+
+  const fetchMoreTopics = async () => {
+    setCurrentPage(currentPage + 1);
+    await loadTopics(currentPage + 1, searchValue);
+  };
+
+  const handleSelectTopic = (value: DROPDOWN_OPTION_TYPE | null) => {
+    console.log("value", value);
+    setSelectedTopic(value);
+  };
+
+  useEffect(() => {
+    loadTopics();
+  }, []);
 
   return (
     <Container sx={{ maxWidth: "97dvw !important" }}>
@@ -185,7 +271,7 @@ const AddQuestionForm: FC = () => {
         </Typography>
         <Box my={2}>
           <Button variant="contained" color="primary" onClick={handleSubmit}>
-            Add Question
+            Save
           </Button>
         </Box>
       </Box>
@@ -203,11 +289,11 @@ const AddQuestionForm: FC = () => {
           aria-label="View switch"
         >
           <ToggleButton
-            value="CODE"
-            aria-label="Code"
+            value="CODING"
+            aria-label="CODING"
             sx={{ textTransform: "none" }}
           >
-            Code
+            Coding
           </ToggleButton>
           <ToggleButton
             value="THEORY"
@@ -291,6 +377,27 @@ const AddQuestionForm: FC = () => {
           </FormControl>
         </Box>
         <Box my={2}>
+          <FormControl fullWidth>
+            <InfiniteScrollDropdown
+              label="Select Topic"
+              handleChange={handleTopicChange}
+              handleSelect={handleSelectTopic}
+              hasMore={currentPage < totalPage}
+              loadMore={fetchMoreTopics}
+              loading={loadingTopics}
+              options={topics}
+              required
+              error={!selectedTopic}
+              handleClose={() => {
+                setTotalPage(1);
+                setCurrentPage(1);
+                setTopics([]);
+                setLoadingTopics(false);
+              }}
+            />
+          </FormControl>
+        </Box>
+        <Box my={2}>
           <TextField
             label="YouTube Link"
             variant="outlined"
@@ -309,7 +416,7 @@ const AddQuestionForm: FC = () => {
             onChange={(e) => setWebsiteLink(e.target.value)}
           />
         </Box>
-        {type === "CODE" && (
+        {type === "CODING" && (
           <Box my={2}>
             <Box
               sx={{

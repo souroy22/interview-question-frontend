@@ -1,23 +1,21 @@
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Container,
-  Link,
-  CircularProgress,
-  Grid,
-} from "@mui/material";
+import { FC, useState } from "react";
+import { Button, CircularProgress } from "@mui/material";
+import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import useForm from "../../hooks/useForm";
-import notification from "../../configs/notification.config";
 import { signin } from "../../api/auth.api";
 import { customLocalStorage } from "../../utils/customLocalStorage";
-import { useDispatch } from "react-redux";
 import { setUserData } from "../../store/user/userReducer";
+import notification from "../../configs/notification.config";
+import { RiLockPasswordFill } from "react-icons/ri";
+import { MdOutlineAlternateEmail } from "react-icons/md";
+import TextInput from "../../components/TextInput";
+import useForm from "../../hooks/useForm";
 
-const Login: React.FC = () => {
+const Login: FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const formFields = [
     {
@@ -25,6 +23,7 @@ const Login: React.FC = () => {
       label: "Email",
       type: "email",
       required: true,
+      StartIcon: MdOutlineAlternateEmail,
       validation: (value: string) =>
         /^\S+@\S+\.\S+$/.test(value) ? null : "Invalid email format",
     },
@@ -33,6 +32,7 @@ const Login: React.FC = () => {
       label: "Password",
       type: "password",
       required: true,
+      StartIcon: RiLockPasswordFill,
       validation: (value: string) =>
         value.length >= 6
           ? null
@@ -40,112 +40,73 @@ const Login: React.FC = () => {
     },
   ];
 
-  const dispatch = useDispatch();
-  const location = useLocation();
+  const { formData, errors, handleChange, handleSubmit } = useForm(formFields);
 
-  const { formData, errors, loading, handleChange, handleSubmit } =
-    useForm(formFields);
-
-  const handleLogin = async (data: { [key: string]: string }) => {
+  const handleSignin = async (data: { [key: string]: string }) => {
+    setLoading(true);
     try {
       const res = await signin(data);
       customLocalStorage.setData("user-token", res.token);
       dispatch(setUserData(res.user));
-      navigate(location.state?.prevUrl || "/");
+      navigate(
+        location.state?.prevUrl && location.state.prevUrl !== "/signin"
+          ? location.state.prevUrl
+          : "/"
+      );
+      notification.success("Signed in successfully");
     } catch (error) {
       if (error instanceof Error) {
         notification.error(error.message);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleNavigateToSignup = () => {
-    navigate("/signup");
-  };
-
   return (
-    <Container
-      maxWidth="xs"
-      className="main-container"
-      sx={{
-        display: "flex",
-        alignItems: "flex-start",
-        flexWrap: "wrap",
-        marginLeft: 0,
+    <form
+      action="#"
+      className="sign-in-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit(handleSignin);
       }}
     >
-      <Box
-        sx={{
-          mt: 3,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          marginTop: 4,
-          padding: 2,
-          backgroundColor: "background.paper",
-          borderRadius: 2,
-          boxShadow: "0 0 5px gray",
-        }}
+      <h2 className="title">Sign in</h2>
+      {formFields.map((field) => (
+        <TextInput
+          name={field.name}
+          type={field.type}
+          placeholder={field.label}
+          required={true}
+          errors={errors}
+          value={formData[field.name] || ""}
+          onChange={(event) =>
+            handleChange(event.target.name, event.target.value)
+          }
+          StartIcon={field.StartIcon}
+        />
+      ))}
+      <Button
+        type="submit"
+        variant="contained"
+        className={`btn ${loading ? "disabled" : ""}`}
+        disabled={loading}
       >
-        <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-          Login Form
-        </Typography>
-        <Grid container spacing={2}>
-          {formFields.map((field) => (
-            <Grid item xs={12} key={field.name}>
-              <TextField
-                fullWidth
-                name={field.name}
-                label={field.label}
-                type={field.type}
-                required={field.required}
-                value={formData[field.name] || ""}
-                onChange={(e) => handleChange(field.name, e.target.value)}
-                error={!!errors[field.name]}
-                helperText={errors[field.name]}
-                variant="outlined"
-                autoComplete="off"
-                inputProps={{
-                  autoComplete: "new-password",
-                  form: {
-                    autoComplete: "off",
-                  },
-                }}
-                disabled={loading} // Disable input fields when loading
-              />
-            </Grid>
-          ))}
-        </Grid>
-
-        <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={loading}
-            onClick={() => handleSubmit(handleLogin)}
-            fullWidth
-          >
-            Login
-          </Button>
-          {loading && (
-            <CircularProgress
-              size={24}
-              sx={{
-                color: "primary",
-                position: "absolute",
-                right: 10,
-              }}
-            />
-          )}
-        </Box>
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          Don't have an account?{" "}
-          <Link href="#" onClick={handleNavigateToSignup}>
-            Sign up here
-          </Link>
-        </Typography>
-      </Box>
-    </Container>
+        {loading ? (
+          <CircularProgress
+            sx={{
+              color: "white",
+              width: "25px !important",
+              height: "25px !important",
+            }}
+          />
+        ) : (
+          "Sign In"
+        )}
+      </Button>
+      <p className="social-text">Or Sign in with social platforms</p>
+    </form>
   );
 };
 

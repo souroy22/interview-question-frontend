@@ -26,17 +26,23 @@ export const deleteTopic = async (id: string) => {
 
 export const getTopics = async (
   category: string,
+  page: number = 1,
   searchValue: string = "",
   isVerified: boolean | null = null
 ) => {
-  const query: any = {};
+  const query: any = { page };
   if (searchValue?.trim()) {
     query["searchValue"] = searchValue;
   }
   if (isVerified !== null) {
     query["isVerified"] = isVerified;
   }
-  const res: any = await AXIOS.get(`/topic/all/${category}`, { params: query });
+  if (category?.trim()) {
+    query["categorySlug"] = category;
+  }
+  const res: any = await AXIOS.get(`/topic/all`, {
+    params: query,
+  });
   if (res.data.error) {
     return Promise.reject(res.data.error);
   }

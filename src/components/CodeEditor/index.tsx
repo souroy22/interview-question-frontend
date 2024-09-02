@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, FC } from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
 import {
   Box,
@@ -20,7 +20,7 @@ const defaultCode = {
 
 type Language = "javascript" | "typescript" | "jsx" | "tsx";
 
-const CodeEditor: React.FC = () => {
+const CodeEditor: FC = () => {
   const [language, setLanguage] = useState<Language>("javascript");
   const [code, setCode] = useState<string>(defaultCode[language]);
   const [output, setOutput] = useState<string>(""); // State for storing output

@@ -7,6 +7,8 @@ import {
   Link,
   CircularProgress,
   Grid,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import useForm from "../../hooks/useForm";
@@ -15,6 +17,12 @@ import { signup } from "../../api/auth.api";
 import { customLocalStorage } from "../../utils/customLocalStorage";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../../store/user/userReducer";
+import { FC, useState } from "react";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import TextInput from "../../components/TextInput";
+import { FaUser } from "react-icons/fa";
+import { MdOutlineAlternateEmail } from "react-icons/md";
+import { RiLockPasswordFill } from "react-icons/ri";
 
 const formFields = [
   {
@@ -22,6 +30,7 @@ const formFields = [
     label: "First Name",
     type: "text",
     required: true,
+    StartIcon: FaUser,
     validation: (value: string) =>
       value.length >= 3 ? null : "Password must be at least 6 characters long",
   },
@@ -30,6 +39,7 @@ const formFields = [
     label: "Last Name",
     type: "text",
     required: true,
+    StartIcon: FaUser,
     validation: (value: string) =>
       value.length >= 3 ? null : "Password must be at least 6 characters long",
   },
@@ -38,6 +48,7 @@ const formFields = [
     label: "Contact Number",
     type: "text",
     required: true,
+    StartIcon: FaUser,
     validation: (value: string) =>
       value.length >= 10 ? null : "Password must be at least 6 characters long",
   },
@@ -45,6 +56,7 @@ const formFields = [
     name: "email",
     label: "Email",
     type: "email",
+    StartIcon: MdOutlineAlternateEmail,
     required: true,
     validation: (value: string) =>
       /^\S+@\S+\.\S+$/.test(value) ? null : "Invalid email format",
@@ -53,13 +65,18 @@ const formFields = [
     name: "password",
     label: "Password",
     type: "password",
+    StartIcon: RiLockPasswordFill,
     required: true,
     validation: (value: string) =>
       value.length >= 6 ? null : "Password must be at least 6 characters long",
   },
 ];
 
-const Login: React.FC = () => {
+const Login: FC = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
@@ -85,88 +102,78 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container
-      maxWidth="xs"
-      className="main-container"
-      sx={{
-        display: "flex",
-        alignItems: "flex-start",
-        flexWrap: "wrap",
-        marginLeft: 0,
+    <form
+      action="#"
+      className="sign-up-form"
+      autoComplete="off"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit(handleSignup);
       }}
     >
-      <Box
-        sx={{
-          mt: 3,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          marginTop: 4,
-          padding: 2,
-          backgroundColor: "background.paper",
-          borderRadius: 2,
-          boxShadow: "0 0 5px gray",
-        }}
+      <h2 className="title">Sign up</h2>
+      {/* <TextInput
+        type="text"
+        name="name"
+        placeholder="Enter fullname"
+        required={true}
+        minLength={3}
+        maxLength={50}
+        errors={errors}
+        StartIcon={FaUser}
+        onChange={}
+      />
+      <TextInput
+        name="email"
+        type="email"
+        placeholder="Enter Email address"
+        required={true}
+        errors={errors}
+        StartIcon={MdOutlineAlternateEmail}
+      />
+      <TextInput
+        type="password"
+        name="password"
+        placeholder="Enter a strong password"
+        required={true}
+        minLength={8}
+        errors={errors}
+        StartIcon={RiLockPasswordFill}
+      /> */}
+      {formFields.map((field) => (
+        <TextInput
+          name={field.name}
+          type={field.type}
+          placeholder={field.label}
+          required={true}
+          errors={errors}
+          value={formData[field.name] || ""}
+          onChange={(event) =>
+            handleChange(event.target.name, event.target.value)
+          }
+          StartIcon={field.StartIcon}
+        />
+      ))}
+      <Button
+        type="submit"
+        variant="contained"
+        className={`btn ${loading ? "disabled" : ""}`}
+        disabled={loading}
       >
-        <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-          Signup Form
-        </Typography>
-        <Grid container spacing={2}>
-          {formFields.map((field) => (
-            <Grid item xs={12} key={field.name}>
-              <TextField
-                fullWidth
-                name={field.name}
-                label={field.label}
-                type={field.type}
-                required={field.required}
-                value={formData[field.name] || ""}
-                onChange={(e) => handleChange(field.name, e.target.value)}
-                error={!!errors[field.name]}
-                helperText={errors[field.name]}
-                variant="outlined"
-                autoComplete="off"
-                inputProps={{
-                  autoComplete: "new-password",
-                  form: {
-                    autoComplete: "off",
-                  },
-                }}
-                disabled={loading}
-              />
-            </Grid>
-          ))}
-        </Grid>
-
-        <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={loading}
-            onClick={() => handleSubmit(handleSignup)}
-            fullWidth
-          >
-            Signup
-          </Button>
-          {loading && (
-            <CircularProgress
-              size={24}
-              sx={{
-                color: "primary",
-                position: "absolute",
-                right: 10,
-              }}
-            />
-          )}
-        </Box>
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          Don't have an account?{" "}
-          <Link href="#" onClick={handleNavigateToLogin}>
-            Login here
-          </Link>
-        </Typography>
-      </Box>
-    </Container>
+        {loading ? (
+          <CircularProgress
+            sx={{
+              color: "white",
+              width: "25px !important",
+              height: "25px !important",
+            }}
+          />
+        ) : (
+          "Sign Up"
+        )}
+      </Button>
+      <p className="social-text">Or Sign up with social platforms</p>
+    </form>
   );
 };
 

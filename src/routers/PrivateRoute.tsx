@@ -10,7 +10,7 @@ const PrivateRoute = () => {
   if (user) {
     return <Outlet />;
   }
-  return <Navigate to="/login" state={{ prevUrl: location.pathname }} />;
+  return <Navigate to="/signin" state={{ prevUrl: location.pathname }} />;
 };
 
 export default PrivateRoute;

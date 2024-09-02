@@ -17,11 +17,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Logout, Settings } from "@mui/icons-material";
 import { updateUserData } from "../../api/user.api";
 import { setUserData } from "../../store/user/userReducer";
 import notification from "../../configs/notification.config";
+import { customLocalStorage } from "../../utils/customLocalStorage";
 
 const slotProps = {
   paper: {
@@ -63,6 +64,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const open = Boolean(anchorEl);
 
@@ -120,6 +122,13 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
       .join(" "); // Step 4: Join words with a space
   };
 
+  const handleLogout = () => {
+    customLocalStorage.deleteData("user-token");
+    dispatch(setUserData(null));
+    handleClose();
+    navigate("/signin");
+  };
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -173,7 +182,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
               </ListItemIcon>
               Settings
             </MenuItem>
-            <MenuItem>
+            <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <Logout fontSize="small" />
               </ListItemIcon>

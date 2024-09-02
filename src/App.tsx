@@ -47,10 +47,8 @@ const App: React.FC = () => {
       <CssBaseline />
       <Toaster />
       <BrowserRouter>
-        <Navbar toggleTheme={toggleTheme} />
-        <Container maxWidth="xl" className="homepage-container">
-          <RouterComponent />
-        </Container>
+        {/* <Navbar toggleTheme={toggleTheme} /> */}
+        <RouterComponent />
       </BrowserRouter>
     </ThemeProvider>
   );

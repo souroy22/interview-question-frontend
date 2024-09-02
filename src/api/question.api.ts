@@ -33,3 +33,11 @@ export const getQuestionDetails = async (questionSlug: string) => {
   }
   return res.data;
 };
+
+export const createQuestion = async (data: any) => {
+  const res: any = await AXIOS.post("/question/create", { ...data });
+  if (res.data.error) {
+    return Promise.reject(res.data.error);
+  }
+  return res.data;
+};
