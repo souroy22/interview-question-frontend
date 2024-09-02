@@ -6,6 +6,7 @@ import FallBack from "../components/FallBack";
 import AuthLayout from "../layouts/AuthLayout";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
+import BaseLayout from "../layouts/BaseLayout";
 
 const HomePage = lazy(() => import("../pages/HomePage"));
 const QuestionDetails = lazy(() => import("../pages/QuestionDetails"));
@@ -26,18 +27,19 @@ const RouterComponent = () => {
           </Route>
         </Route>
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/category/:categoryId" element={<QuestionPage />} />
-          <Route
-            path="/category/:categoryId/topic/:topicId"
-            element={<TopicWiseQuestionsList />}
-          />
-
-          <Route
-            path="/category/:categoryId/question/:questionId"
-            element={<QuestionDetails />}
-          />
-          <Route path="/question/create" element={<AddQuestionForm />} />
+          <Route element={<BaseLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/category/:categoryId" element={<QuestionPage />} />
+            <Route
+              path="/category/:categoryId/topic/:topicId"
+              element={<TopicWiseQuestionsList />}
+            />
+            <Route
+              path="/category/:categoryId/question/:questionId"
+              element={<QuestionDetails />}
+            />
+            <Route path="/question/create" element={<AddQuestionForm />} />
+          </Route>
         </Route>
       </Routes>
     </Suspense>

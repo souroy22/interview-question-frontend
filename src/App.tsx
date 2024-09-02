@@ -1,12 +1,6 @@
-import {
-  ThemeProvider,
-  createTheme,
-  CssBaseline,
-  Container,
-} from "@mui/material";
+import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import useThemeMode from "./hooks/useThemeMode";
 import RouterComponent from "./routers/router";
-import Navbar from "./components/Navbar";
 import "./App.css";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
@@ -17,7 +11,7 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "./store/user/userReducer";
 
 const App: React.FC = () => {
-  const { toggleTheme, theme } = useThemeMode();
+  const { theme } = useThemeMode();
 
   const dispatch = useDispatch();
 
@@ -47,7 +41,6 @@ const App: React.FC = () => {
       <CssBaseline />
       <Toaster />
       <BrowserRouter>
-        {/* <Navbar toggleTheme={toggleTheme} /> */}
         <RouterComponent />
       </BrowserRouter>
     </ThemeProvider>

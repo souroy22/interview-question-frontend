@@ -1,0 +1,33 @@
+.main-layout {
+  height: 100dvh;
+  width: 100dvw;
+  display: flex;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.child-container {
+  margin-top: 64px;
+  height: calc(100dvh - 70px);
+  overflow-y: auto;
+  width: 100%;
+}
+
+.child-container::-webkit-scrollbar {
+  width: 10px;
+  border-radius: 10px;
+}
+
+.child-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.child-container::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #888;
+}
+
+.child-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

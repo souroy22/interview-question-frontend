@@ -1,15 +1,4 @@
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Container,
-  Link,
-  CircularProgress,
-  Grid,
-  InputAdornment,
-  IconButton,
-} from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import useForm from "../../hooks/useForm";
 import notification from "../../configs/notification.config";
@@ -17,10 +6,9 @@ import { signup } from "../../api/auth.api";
 import { customLocalStorage } from "../../utils/customLocalStorage";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../../store/user/userReducer";
-import { FC, useState } from "react";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { FC } from "react";
 import TextInput from "../../components/TextInput";
-import { FaUser } from "react-icons/fa";
+import { FaPhoneAlt, FaUser } from "react-icons/fa";
 import { MdOutlineAlternateEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 
@@ -32,7 +20,7 @@ const formFields = [
     required: true,
     StartIcon: FaUser,
     validation: (value: string) =>
-      value.length >= 3 ? null : "Password must be at least 6 characters long",
+      value.length >= 3 ? null : "Password must be at least 3 characters long",
   },
   {
     name: "lastName",
@@ -41,16 +29,18 @@ const formFields = [
     required: true,
     StartIcon: FaUser,
     validation: (value: string) =>
-      value.length >= 3 ? null : "Password must be at least 6 characters long",
+      value.length >= 3 ? null : "Password must be at least 3 characters long",
   },
   {
     name: "phone",
     label: "Contact Number",
     type: "text",
     required: true,
-    StartIcon: FaUser,
+    StartIcon: FaPhoneAlt,
     validation: (value: string) =>
-      value.length >= 10 ? null : "Password must be at least 6 characters long",
+      value.length >= 10
+        ? null
+        : "Password must be at least 10 characters long",
   },
   {
     name: "email",
@@ -73,10 +63,6 @@ const formFields = [
 ];
 
 const Login: FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleClickShowPassword = () => setShowPassword(!showPassword);
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
@@ -97,9 +83,7 @@ const Login: FC = () => {
     }
   };
 
-  const handleNavigateToLogin = () => {
-    navigate("/login");
-  };
+  console.log("errors", errors);
 
   return (
     <form
@@ -112,45 +96,16 @@ const Login: FC = () => {
       }}
     >
       <h2 className="title">Sign up</h2>
-      {/* <TextInput
-        type="text"
-        name="name"
-        placeholder="Enter fullname"
-        required={true}
-        minLength={3}
-        maxLength={50}
-        errors={errors}
-        StartIcon={FaUser}
-        onChange={}
-      />
-      <TextInput
-        name="email"
-        type="email"
-        placeholder="Enter Email address"
-        required={true}
-        errors={errors}
-        StartIcon={MdOutlineAlternateEmail}
-      />
-      <TextInput
-        type="password"
-        name="password"
-        placeholder="Enter a strong password"
-        required={true}
-        minLength={8}
-        errors={errors}
-        StartIcon={RiLockPasswordFill}
-      /> */}
       {formFields.map((field) => (
         <TextInput
+          key={field.name}
           name={field.name}
           type={field.type}
           placeholder={field.label}
           required={true}
-          errors={errors}
-          value={formData[field.name] || ""}
-          onChange={(event) =>
-            handleChange(event.target.name, event.target.value)
-          }
+          error={errors[field.name] ?? ""}
+          value={formData[field.name]}
+          onChange={(event) => handleChange(field.name, event.target.value)}
           StartIcon={field.StartIcon}
         />
       ))}

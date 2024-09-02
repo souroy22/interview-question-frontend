@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { FC, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -23,6 +23,7 @@ import { updateUserData } from "../../api/user.api";
 import { setUserData } from "../../store/user/userReducer";
 import notification from "../../configs/notification.config";
 import { customLocalStorage } from "../../utils/customLocalStorage";
+import useThemeMode from "../../hooks/useThemeMode";
 
 const slotProps = {
   paper: {
@@ -53,12 +54,9 @@ const slotProps = {
   },
 };
 
-interface NavbarProps {
-  toggleTheme: () => void;
-}
-
-const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
+const Navbar: FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { toggleTheme } = useThemeMode();
   const { theme } = useSelector((state: RootState) => state.globalReducer);
 
   const { user } = useSelector((state: RootState) => state.userReducer);
@@ -130,7 +128,11 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar
+      sx={{
+        backgroundColor: theme === "light" ? "#5C6BC0" : "#272727",
+      }}
+    >
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           <Link to="/" style={{ all: "unset", cursor: "pointer" }}>

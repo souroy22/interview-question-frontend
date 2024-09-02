@@ -1,5 +1,4 @@
-import { Box } from "@mui/material";
-import { ErrorMessage } from "@hookform/error-message";
+import { Box, Tooltip } from "@mui/material";
 import { IconType } from "react-icons";
 import "./style.css";
 import { ChangeEvent, useState } from "react";
@@ -9,7 +8,7 @@ type PropTypes = {
   type: string;
   placeholder: string;
   name: string;
-  errors: any;
+  error?: string | null;
   required?: boolean;
   minLength?: number;
   maxLength?: number;
@@ -22,7 +21,7 @@ const TextInput = ({
   type = "text",
   placeholder,
   name,
-  errors,
+  error = null,
   required = false,
   StartIcon = null,
   value,
@@ -41,31 +40,29 @@ const TextInput = ({
           </Box>
         )}
         <input
+          name={name}
           value={value}
           onChange={onChange}
           type={
             type === "password" ? (showPassword ? "text" : "password") : type
           }
           placeholder={`${placeholder}${required ? "*" : ""}`}
-          autoComplete="off"
+          autoComplete="new-password"
         />
         {type === "password" && (
-          <Box className="end-icon">
-            {showPassword ? (
-              <Visibility onClick={() => setShowPassword(!showPassword)} />
-            ) : (
-              <VisibilityOff onClick={() => setShowPassword(!showPassword)} />
-            )}
-          </Box>
+          <Tooltip title={`Click to ${showPassword ? "hide" : "show"}`}>
+            <Box className="end-icon">
+              {showPassword ? (
+                <Visibility onClick={() => setShowPassword(!showPassword)} />
+              ) : (
+                <VisibilityOff onClick={() => setShowPassword(!showPassword)} />
+              )}
+            </Box>
+          </Tooltip>
         )}
       </Box>
-      <ErrorMessage
-        errors={errors}
-        name={name}
-        render={({ message }) => (
-          <span className="error-message">{message}</span>
-        )}
-      />
+
+      {error && <span className="error-message">{error}</span>}
     </>
   );
 };

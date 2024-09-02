@@ -3,12 +3,14 @@ import { Box } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AUTH_SIGNIN_IMAGE from "../../assets/images/log.svg";
 import AUTH_SIGNUP_IMAGE from "../../assets/images/register.svg";
-import { GrGoogle } from "react-icons/gr";
+import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
+import { useTheme } from "@mui/material/styles";
 import "./style.css";
 
 const AuthLayout = () => {
   const [mode, setMode] = useState<boolean>(false);
+  const theme = useTheme();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,20 +19,24 @@ const AuthLayout = () => {
     if (location.pathname === "/signup") {
       setMode(true);
     }
-  }, []);
+  }, [location.pathname]);
 
   return (
-    <Box className={`container ${mode ? "sign-up-mode" : ""}`}>
+    <Box
+      className={`container ${mode ? "sign-up-mode" : ""} ${
+        theme.palette.mode === "dark" ? "dark-mode" : ""
+      }`}
+    >
       <Box className="forms-container">
         <Box className="signin-signup">
           <Outlet />
           <Box className="social-media">
             <a href="#" className="social-icon">
-              <GrGoogle />
+              <FcGoogle />
             </a>
 
             <a href="#" className="social-icon">
-              <FaFacebook />
+              <FaFacebook color="#106BFF" />
             </a>
           </Box>
         </Box>

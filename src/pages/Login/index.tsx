@@ -63,6 +63,8 @@ const Login: FC = () => {
     }
   };
 
+  console.log("formData", formData);
+
   return (
     <form
       action="#"
@@ -75,15 +77,14 @@ const Login: FC = () => {
       <h2 className="title">Sign in</h2>
       {formFields.map((field) => (
         <TextInput
+          key={field.name}
           name={field.name}
           type={field.type}
           placeholder={field.label}
           required={true}
-          errors={errors}
-          value={formData[field.name] || ""}
-          onChange={(event) =>
-            handleChange(event.target.name, event.target.value)
-          }
+          error={errors[field.name] ?? ""}
+          value={formData[field.name]}
+          onChange={(event) => handleChange(field.name, event.target.value)}
           StartIcon={field.StartIcon}
         />
       ))}

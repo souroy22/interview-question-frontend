@@ -7,7 +7,7 @@ input {
   position: relative;
   width: 100%;
   background-color: #fff;
-  min-height: 100svh;
+  min-height: calc(100dvh - 64px);
   overflow: hidden;
 }
 
@@ -79,7 +79,7 @@ form.sign-in-form {
   border-radius: 50%;
   border: 1px solid #333;
   text-decoration: none;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   transition: 0.3s;
 }
 
@@ -363,4 +363,20 @@ form.sign-in-form {
     bottom: 28%;
     left: 50%;
   }
+}
+
+.container {
+  transition: background-color 0.2s, color 0.1s;
+}
+
+/* Light mode styles */
+.container {
+  background-color: #fff;
+  color: #000;
+}
+
+/* Dark mode styles */
+.dark-mode {
+  background-color: #333;
+  color: #fff;
 }
