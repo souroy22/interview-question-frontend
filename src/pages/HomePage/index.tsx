@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import {
   Container,
   Grid,
@@ -40,7 +40,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import useDebounce from "../../hooks/useDebounce";
 import InfiniteScrollComponent from "../../components/InfiniteScrollComponent";
 
-const HomePage: React.FC = () => {
+const HomePage: FC = () => {
   const [popupOpen, setPopupOpen] = useState(false);
   const [openDeletePopup, setOpenDeletePopup] = useState(false);
   const [mode, setMode] = useState<"CREATE" | "UPDATE">("CREATE");
@@ -281,6 +281,7 @@ const HomePage: React.FC = () => {
             padding: "20px",
             flexWrap: "wrap",
             justifyContent: "center",
+            height: "calc(100dvh - 160px)",
           }}
         >
           {user?.adminMode &&
@@ -373,7 +374,7 @@ const HomePage: React.FC = () => {
           })}
           {isLoading && (
             <>
-              {[...Array(3)].map((_, index) => (
+              {[...Array(6)].map((_, index) => (
                 <Skeleton
                   key={index}
                   variant="rectangular"

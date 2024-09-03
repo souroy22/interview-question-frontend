@@ -9,7 +9,7 @@
 .child-container {
   margin-top: 64px;
   height: calc(100dvh - 70px);
-  overflow-y: auto;
+  overflow: hidden;
   width: 100%;
 }
 

@@ -6,12 +6,12 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { getUserData } from "./api/user.api";
 import notification from "./configs/notification.config";
-import { useEffect } from "react";
+import { FC, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setUserData } from "./store/user/userReducer";
 import Navbar from "./components/Navbar";
 
-const App: React.FC = () => {
+const App: FC = () => {
   const { theme, toggleTheme } = useThemeMode();
 
   const dispatch = useDispatch();
