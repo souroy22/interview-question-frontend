@@ -8,12 +8,12 @@ const PublicRoute = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   if (user) {
-    return (
-      <Navigate
-        to={location.state?.prevUrl || "/"}
-        state={{ prevUrl: location.pathname }}
-      />
-    );
+    let prevUrl =
+      new URLSearchParams(location.search).get("prevUrl") || location.pathname;
+    if (prevUrl.includes("/signin") || prevUrl.includes("/signup")) {
+      prevUrl = "/";
+    }
+    return <Navigate to={prevUrl} state={{ prevUrl: location.pathname }} />;
   }
 
   return <Outlet />;

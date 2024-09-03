@@ -23,7 +23,6 @@ import { updateUserData } from "../../api/user.api";
 import { setUserData } from "../../store/user/userReducer";
 import notification from "../../configs/notification.config";
 import { customLocalStorage } from "../../utils/customLocalStorage";
-import useThemeMode from "../../hooks/useThemeMode";
 
 const slotProps = {
   paper: {
@@ -54,9 +53,12 @@ const slotProps = {
   },
 };
 
-const Navbar: FC = () => {
+interface NavbarProps {
+  toggleTheme: () => void;
+}
+
+const Navbar: FC<NavbarProps> = ({ toggleTheme }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { toggleTheme } = useThemeMode();
   const { theme } = useSelector((state: RootState) => state.globalReducer);
 
   const { user } = useSelector((state: RootState) => state.userReducer);

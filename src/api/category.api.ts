@@ -25,10 +25,11 @@ export const deleteCategory = async (id: string) => {
 };
 
 export const getCategories = async (
+  page: number = 1,
   searchValue: string = "",
   isVerified: boolean | null = null
 ) => {
-  const query: any = {};
+  const query: any = { page, limit: 10 };
   if (searchValue?.trim()) {
     query["searchValue"] = searchValue;
   }

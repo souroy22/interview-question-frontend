@@ -54,16 +54,26 @@ const SearchComponent: FC<PROP_TYPE> = ({
     }
   };
 
+  const getQuery = (key: string) => {
+    const queryParams = new URLSearchParams(location.search);
+    const value = queryParams.get(key);
+    return value;
+  };
+
   useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
       if (
-        inputRef.current &&
+        inputRef?.current &&
         !inputRef.current.contains(event.target as Node)
       ) {
         handleClickAway();
       }
     };
-
+    const query = getQuery("query") ?? undefined;
+    if (query) {
+      setSearchTerm(query);
+      setInputOpen(true);
+    }
     document.addEventListener("mousedown", handleDocumentClick);
     return () => {
       document.removeEventListener("mousedown", handleDocumentClick);

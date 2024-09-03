@@ -61,14 +61,6 @@ const Topics: React.FC = () => {
     setUpdatingTopic(null);
   };
 
-  const getTopicValue = (id: string) => {
-    if (!id) {
-      return { name: "name", value: "" };
-    }
-    const topic = topics.find((cat) => cat.slug === id);
-    return { name: "name", value: topic?.name || "" };
-  };
-
   const handleDelete = async () => {
     try {
       if (deleteTopicId) {
@@ -95,7 +87,7 @@ const Topics: React.FC = () => {
   const handleChange = async (newValue: string) => {
     setValue(newValue);
     if (newValue.trim() !== value) {
-      const res = await getCategories(newValue.trim(), filter?.value);
+      const res = await getCategories(1, newValue.trim(), filter?.value);
       dispatch(setCategories(res.data));
     }
   };
@@ -112,7 +104,7 @@ const Topics: React.FC = () => {
   }) => {
     setFilter(selectedFilter);
     if (selectedFilter.label !== filter?.label) {
-      const res = await getCategories(value, selectedFilter?.value);
+      const res = await getCategories(1, value, selectedFilter?.value);
       dispatch(setCategories(res.data));
     }
     handleCloseDropdown();
@@ -189,7 +181,6 @@ const Topics: React.FC = () => {
       <Popup open={popupOpen} onClose={handleClosePopup}>
         <TopicForm
           onClose={handleClosePopup}
-          defaultValues={[{ ...getTopicValue(updatingTopic?.slug || "") }]}
           mode={mode}
           slug={updatingTopic?.slug || ""}
           updatingTopic={updatingTopic}

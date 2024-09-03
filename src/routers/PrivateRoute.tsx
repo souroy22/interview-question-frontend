@@ -10,7 +10,13 @@ const PrivateRoute = () => {
   if (user) {
     return <Outlet />;
   }
-  return <Navigate to="/signin" state={{ prevUrl: location.pathname }} />;
+  const prevUrl = encodeURIComponent(location.pathname + location.search);
+  return (
+    <Navigate
+      to={`/signin?prevUrl=${prevUrl}`}
+      state={{ prevUrl: location.pathname }}
+    />
+  );
 };
 
 export default PrivateRoute;

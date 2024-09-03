@@ -1,19 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  TextField,
-  Button,
-  Box,
-  Select,
-  MenuItem,
-  InputLabel,
-} from "@mui/material";
+import { TextField, Button, Box, InputLabel, FormControl } from "@mui/material";
 import useForm from "../../hooks/useForm";
 import { getCategories } from "../../api/category.api";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  CATEGORY_TYPE,
-  setCategories,
-} from "../../store/category/categoryReducer";
 import { RootState } from "../../store/store";
 import notification from "../../configs/notification.config";
 import { createTopic, updateTopic } from "../../api/topic.api";
@@ -23,8 +12,11 @@ import {
   Topic_TYPE,
 } from "../../store/topic/topicReducer";
 import { useParams } from "react-router-dom";
+import InfiniteScrollDropdown, {
+  DROPDOWN_OPTION_TYPE,
+} from "../InfiniteScrollDropdown";
+import { TOPIC_DROPDOWN_TYPE } from "../AddQuestionForm";
 
-// Define the fields for the add category form
 const formFields = [
   {
     name: "name",
@@ -36,15 +28,9 @@ const formFields = [
   },
 ];
 
-type DEFAULT_VALUE_TYPE = {
-  name: string;
-  value: string | number;
-};
-
 type TopicFormProps = {
   onClose: () => void;
   mode?: "CREATE" | "UPDATE";
-  defaultValues?: DEFAULT_VALUE_TYPE[];
   slug?: string;
   updatingTopic?: null | Topic_TYPE;
 };
@@ -52,14 +38,18 @@ type TopicFormProps = {
 const TopicForm: React.FC<TopicFormProps> = ({
   onClose,
   mode = "CREATE",
-  defaultValues = null,
   slug = null,
   updatingTopic = null,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<null | {
-    name: string;
-    slug: string;
-  }>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<null | TOPIC_DROPDOWN_TYPE>(null);
+  const [categoryOptions, setCategoryOptions] = useState<
+    TOPIC_DROPDOWN_TYPE[] | []
+  >([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPage, setTotalPage] = useState<number>(1);
+  const [searchValue, setSearchValue] = useState("");
+  const [loadingTopics, setLoadingTopics] = useState(false);
 
   const dispatch = useDispatch();
   const { categoryId } = useParams();
@@ -67,9 +57,6 @@ const TopicForm: React.FC<TopicFormProps> = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { topics } = useSelector((state: RootState) => state.topicReducer);
-  const { categories } = useSelector(
-    (state: RootState) => state.categoryReducer
-  );
 
   const { formData, errors, loading, handleChange, handleSubmit } =
     useForm(formFields);
@@ -81,7 +68,7 @@ const TopicForm: React.FC<TopicFormProps> = ({
 
         const newTopic = await createTopic({
           ...data,
-          categorySlug: selectedCategory?.slug ?? categoryId,
+          categorySlug: selectedCategory?.value ?? categoryId,
         });
         dispatch(addNewTopic(newTopic));
         notification.success("Category created successfully!");
@@ -90,7 +77,7 @@ const TopicForm: React.FC<TopicFormProps> = ({
           const newTopic = await updateTopic(
             {
               ...data,
-              categorySlug: selectedCategory?.slug,
+              categorySlug: selectedCategory?.value,
             },
             slug
           );
@@ -113,25 +100,50 @@ const TopicForm: React.FC<TopicFormProps> = ({
     }
   };
 
-  const handleTopicClick = (value: CATEGORY_TYPE) => {
-    setSelectedCategory(value);
+  const loadCategories = async (page: number = 1, searchValue: string = "") => {
+    setLoadingTopics(true);
+    try {
+      const res = await getCategories(page, searchValue);
+      const data: TOPIC_DROPDOWN_TYPE[] = res.data.map(
+        (category: Topic_TYPE) => {
+          return { label: category.name, value: category.slug };
+        }
+      );
+      setCurrentPage(res.page);
+      setTotalPage(res.totalPages);
+      if (categoryOptions && page !== 1) {
+        setCategoryOptions([...categoryOptions, ...data]);
+      } else {
+        setCategoryOptions(data);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        notification.error(error.message);
+      }
+    } finally {
+      setLoadingTopics(false);
+      inputRef.current?.focus();
+    }
   };
 
   const onLoad = async () => {
-    const res = await getCategories();
-    dispatch(setCategories(res.data));
-    if (mode === "UPDATE" && defaultValues) {
-      for (const data of defaultValues) {
-        handleChange(data.name, data.value.toString());
-      }
-      if (updatingTopic) {
-        setSelectedCategory({
-          name: updatingTopic.category.name,
-          slug: updatingTopic.category.slug,
-        });
-      }
-    }
-    inputRef.current?.focus();
+    await loadCategories();
+  };
+
+  const handleTopicChange = async (value: string) => {
+    setSearchValue(value);
+    setCurrentPage(1);
+    await loadCategories(1, value);
+  };
+
+  const fetchMoreTopics = async () => {
+    setCurrentPage(currentPage + 1);
+    await loadCategories(currentPage + 1, searchValue);
+  };
+
+  const handleSelectTopic = (value: DROPDOWN_OPTION_TYPE | null) => {
+    console.log("value", value);
+    setSelectedCategory(value);
   };
 
   useEffect(() => {
@@ -157,7 +169,7 @@ const TopicForm: React.FC<TopicFormProps> = ({
         disabled={loading}
       />
       <InputLabel id="demo-simple-select-label">Category</InputLabel>
-      <Select
+      {/* <Select
         labelId="demo-simple-select-label"
         id="demo-simple-select"
         value={selectedCategory?.slug ?? categoryId}
@@ -173,7 +185,26 @@ const TopicForm: React.FC<TopicFormProps> = ({
             {topic.name}
           </MenuItem>
         ))}
-      </Select>
+      </Select> */}
+      <FormControl fullWidth>
+        <InfiniteScrollDropdown
+          label="Select Category"
+          handleChange={handleTopicChange}
+          handleSelect={handleSelectTopic}
+          hasMore={currentPage < totalPage}
+          loadMore={fetchMoreTopics}
+          loading={loadingTopics}
+          options={categoryOptions}
+          required
+          error={!selectedCategory}
+          handleClose={() => {
+            setTotalPage(1);
+            setCurrentPage(1);
+            setCategoryOptions([]);
+            setLoadingTopics(false);
+          }}
+        />
+      </FormControl>
       <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
         <Button
           variant="contained"

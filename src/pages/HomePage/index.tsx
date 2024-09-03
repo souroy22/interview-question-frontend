@@ -12,9 +12,10 @@ import {
   Fade,
   Button,
   Switch,
+  Skeleton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./style.css";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -37,6 +38,7 @@ import SearchComponent from "../../components/SearchInput";
 import { filterOptions } from "../../constants";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import useDebounce from "../../hooks/useDebounce";
+import InfiniteScrollComponent from "../../components/InfiniteScrollComponent";
 
 const HomePage: React.FC = () => {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -51,6 +53,9 @@ const HomePage: React.FC = () => {
     label: string;
     value: boolean | null;
   } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -66,10 +71,6 @@ const HomePage: React.FC = () => {
     setPopupOpen(false);
     setMode("CREATE");
     setUpdatingCategory(null);
-  };
-
-  const handleCategoryClick = (categoryId: string) => {
-    navigate(`/category/${categoryId}`);
   };
 
   const getCategoryValue = (id: string) => {
@@ -98,17 +99,55 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const setQuery = (key: string, value: string) => {
+    const params = new URLSearchParams(location.search);
+    params.set(key, value);
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+  };
+
+  const removeQuery = (key: string) => {
+    const params = new URLSearchParams(location.search);
+    params.delete(key);
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+  };
+
+  const getQuery = (key: string) => {
+    const queryParams = new URLSearchParams(location.search);
+    const value = queryParams.get(key);
+    return value;
+  };
   const onLoad = async () => {
-    const res = await getCategories();
-    dispatch(setCategories(res.data));
+    setIsLoading(true);
+    try {
+      const query = getQuery("query") ?? undefined;
+      if (query) {
+        setValue(query);
+      }
+      const res = await getCategories(1, query);
+      setTotalPages(res.totalPages);
+      dispatch(setCategories(res.data));
+    } catch (error) {
+      if (error instanceof Error) {
+        notification.error(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = async (newValue: string) => {
+    setIsLoading(true);
     setValue(newValue);
+    if (newValue.trim()) {
+      setQuery("query", newValue);
+    } else {
+      removeQuery("query");
+    }
     if (newValue.trim() !== value) {
-      const res = await getCategories(newValue.trim(), filter?.value);
+      const res = await getCategories(1, newValue.trim(), filter?.value);
       dispatch(setCategories(res.data));
     }
+    setIsLoading(false);
   };
 
   const debounceHandleChange = useDebounce(handleChange);
@@ -123,7 +162,7 @@ const HomePage: React.FC = () => {
   }) => {
     setFilter(selectedFilter);
     if (selectedFilter.label !== filter?.label) {
-      const res = await getCategories(value, selectedFilter?.value);
+      const res = await getCategories(1, value, selectedFilter?.value);
       dispatch(setCategories(res.data));
     }
     handleCloseDropdown();
@@ -151,12 +190,30 @@ const HomePage: React.FC = () => {
     setAnchorEl(event.currentTarget);
   };
 
+  const loadMoreCategories = async () => {
+    setIsLoading(true);
+    try {
+      if (currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+        const res = await getCategories(currentPage + 1, value, filter?.value);
+        setTotalPages(res.totalPages);
+        dispatch(setCategories([...categories, ...res.data]));
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        notification.error(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     onLoad();
   }, []);
 
   return (
-    <Container>
+    <Container sx={{ maxWidth: "100dvw !important" }}>
       <Box className="heading-section">
         <SearchComponent onChange={debounceHandleChange} />
         {user?.role === "SUPER_ADMIN" && (
@@ -211,93 +268,122 @@ const HomePage: React.FC = () => {
         onConfirm={handleDelete}
         conformBtnName="DELETE"
       />
-      <Grid container spacing={3}>
-        {user?.adminMode &&
-          (user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
-            <Grid item xs={12} sm={6} md={4}>
-              <Card
-                className="add-category-card card-container center-content"
-                sx={{ boxShadow: "none" }}
-                onClick={handleOpenPopup}
-              >
-                <CardContent className="category-content-container center-content">
-                  <IconButton>
-                    <AddIcon className="add-category-icon" />
-                  </IconButton>
-                  <Typography fontSize="25px" fontWeight={700}>
-                    Add Category
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
-        {categories.map((category, index) => {
-          if (!category.canModify && !category.verified) {
-            return null;
-          }
-          if (
-            filter &&
-            filter.label !== "All" &&
-            Boolean(filter?.value) !== category.verified
-          ) {
-            return null;
-          }
-          return (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card
-                onClick={() => handleCategoryClick(category.slug)}
-                className="card-container center-content"
-              >
-                {user?.adminMode && category.canModify && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      right: "10px",
-                      top: "10px",
-                      display: "flex",
-                      gap: "10px",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
+      <Grid id="category-container">
+        <InfiniteScrollComponent
+          dataLength={categories.length + 1}
+          hasMore={currentPage < totalPages}
+          targetId="category-container"
+          loadMoreData={loadMoreCategories}
+          style={{
+            width: "100%",
+            display: "flex",
+            gap: "30px",
+            padding: "20px",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          {user?.adminMode &&
+            (user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
+              <Grid item xs={12} sm={6} md={4}>
+                <Card
+                  className="add-category-card card-container center-content"
+                  sx={{ boxShadow: "none" }}
+                  onClick={handleOpenPopup}
+                >
+                  <CardContent className="category-content-container center-content">
+                    <IconButton>
+                      <AddIcon className="add-category-icon" />
+                    </IconButton>
+                    <Typography fontSize="25px" fontWeight={700}>
+                      Add Category
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+          {categories.map((category, index) => {
+            if (!category.canModify && !category.verified) {
+              return null;
+            }
+            if (
+              filter &&
+              filter.label !== "All" &&
+              Boolean(filter?.value) !== category.verified
+            ) {
+              return null;
+            }
+            return (
+              <Link to={`/category/${category.slug}`}>
+                <Grid xs={12} sm={6} md={4} key={index}>
+                  <Card
+                    // onClick={() => handleCategoryClick(category.slug)}
+                    className="card-container center-content"
                   >
-                    <CreateIcon
-                      sx={{ color: "green", cursor: "pointer" }}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setMode("UPDATE");
-                        setPopupOpen(true);
-                        setUpdatingCategory(category);
-                      }}
-                    />
-                    <DeleteIcon
-                      sx={{ color: "crimson", cursor: "pointer" }}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setOpenDeletePopup(true);
-                        setDeleteCategoryId(category.slug);
-                      }}
-                    />
-                    {user?.role === "SUPER_ADMIN" && (
-                      <Switch
-                        checked={category.verified}
-                        onChange={async () => {
-                          await handleVerified(
-                            category.slug,
-                            !category.verified
-                          );
+                    {user?.adminMode && category.canModify && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          right: "10px",
+                          top: "10px",
+                          display: "flex",
+                          gap: "10px",
+                          justifyContent: "center",
+                          alignItems: "center",
                         }}
-                        onClick={(event) => event.stopPropagation()}
-                      />
+                      >
+                        <CreateIcon
+                          sx={{ color: "green", cursor: "pointer" }}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setMode("UPDATE");
+                            setPopupOpen(true);
+                            setUpdatingCategory(category);
+                          }}
+                        />
+                        <DeleteIcon
+                          sx={{ color: "crimson", cursor: "pointer" }}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setOpenDeletePopup(true);
+                            setDeleteCategoryId(category.slug);
+                          }}
+                        />
+                        {user?.role === "SUPER_ADMIN" && (
+                          <Switch
+                            checked={category.verified}
+                            onChange={async () => {
+                              await handleVerified(
+                                category.slug,
+                                !category.verified
+                              );
+                            }}
+                            onClick={(event) => event.stopPropagation()}
+                          />
+                        )}
+                      </Box>
                     )}
-                  </Box>
-                )}
-                <CardContent className="center-content">
-                  <Typography variant="h6">{category.name}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
+                    <CardContent className="center-content">
+                      <Typography variant="h6">{category.name}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Link>
+            );
+          })}
+          {isLoading && (
+            <>
+              {[...Array(3)].map((_, index) => (
+                <Skeleton
+                  key={index}
+                  variant="rectangular"
+                  width={400}
+                  height={200}
+                />
+              ))}
+            </>
+          )}
+        </InfiniteScrollComponent>
       </Grid>
     </Container>
   );

@@ -262,7 +262,7 @@ const AddQuestionForm: FC = () => {
           display: "flex",
           gap: "30px",
           justifyContent: "flex-start",
-          flexDirection: "row",
+          flexDirection: "row !important",
           paddingLeft: "50px",
         }}
       >
@@ -388,12 +388,6 @@ const AddQuestionForm: FC = () => {
               options={topics}
               required
               error={!selectedTopic}
-              handleClose={() => {
-                setTotalPage(1);
-                setCurrentPage(1);
-                setTopics([]);
-                setLoadingTopics(false);
-              }}
             />
           </FormControl>
         </Box>

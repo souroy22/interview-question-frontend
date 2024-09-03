@@ -21,6 +21,12 @@ const Popup: React.FC<PopupProps> = ({
     event.stopPropagation();
   };
 
+  const handleClose = (event: React.MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      onClose();
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -58,17 +64,17 @@ const Popup: React.FC<PopupProps> = ({
           {children}
         </Box>
 
-        {/* Background Overlay */}
         <Box
+          onClick={handleClose}
           sx={{
             position: "fixed",
             top: 0,
             left: 0,
             width: "100%",
             height: "100%",
-            bgcolor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
-            backdropFilter: "blur(8px)", // Blur effect
-            zIndex: 1000, // Behind the modal
+            bgcolor: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(8px)",
+            zIndex: 1000,
           }}
         />
       </>

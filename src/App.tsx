@@ -9,9 +9,10 @@ import notification from "./configs/notification.config";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setUserData } from "./store/user/userReducer";
+import Navbar from "./components/Navbar";
 
 const App: React.FC = () => {
-  const { theme } = useThemeMode();
+  const { theme, toggleTheme } = useThemeMode();
 
   const dispatch = useDispatch();
 
@@ -41,6 +42,7 @@ const App: React.FC = () => {
       <CssBaseline />
       <Toaster />
       <BrowserRouter>
+        <Navbar toggleTheme={toggleTheme} />
         <RouterComponent />
       </BrowserRouter>
     </ThemeProvider>

@@ -7,6 +7,8 @@
   height: 200px;
   transition: transform 0.3s ease-in-out !important;
   position: relative;
+  width: 400px;
+  cursor: pointer;
 }
 
 .card-container:hover {
